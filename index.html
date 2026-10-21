@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Song Finder</title>
+<style>
+:root{--bg:#eef3f1;--fg:#14211f;--muted:#51655f;--line:#c9d6d1;--accent:#0b7a6b;--row:#fff}
+@media (prefers-color-scheme:dark){:root{--bg:#101a18;--fg:#e8f2ef;--muted:#9bb2ab;--line:#2a3d38;--accent:#4fd1bd;--row:#182623}}
+*{box-sizing:border-box}
+body{margin:0;font-family:Georgia,"Times New Roman",serif;background:var(--bg);color:var(--fg);line-height:1.5}
+main{max-width:660px;margin:0 auto;padding:28px 16px 48px}
+h1{font-size:2.4rem;margin:0 0 4px;letter-spacing:-.02em}
+.sub{color:var(--muted);margin:0 0 24px}
+label{display:block;font-weight:bold;margin-bottom:6px}
+.bar{display:flex;gap:8px;flex-wrap:wrap}
+input,select,button{font:inherit;padding:10px 12px;border:1px solid var(--line);border-radius:6px;background:var(--row);color:var(--fg)}
+input{flex:1 1 260px}
+button{cursor:pointer}
+button.go{background:var(--accent);color:var(--bg);border-color:var(--accent);font-weight:bold}
+:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+.chips{display:flex;gap:6px;flex-wrap:wrap;margin:14px 0 24px;align-items:center}
+.chips span{color:var(--muted);margin-right:4px}
+.chips button{padding:4px 12px;border-radius:99px}
+#out{margin-top:8px}
+.note{color:var(--muted);margin:6px 0}
+.err{color:#b3261e}
+@media (prefers-color-scheme:dark){.err{color:#ff8a80}}
+ul{list-style:none;padding:0;margin:12px 0}
+li{display:flex;justify-content:space-between;gap:12px;align-items:center;background:var(--row);border:1px solid var(--line);border-left:6px solid var(--accent);padding:10px 14px;margin-bottom:8px}
+li small{color:var(--muted);display:block}
+li a{color:var(--accent);font-weight:bold;white-space:nowrap}
+</style>
+</head>
+<body>
+<main>
+<h1>Song Finder</h1>
+<p class="sub">Type a few songs or artists you like, separated by commas. Get new songs from the same genre.</p>
+
+<label for="q">Songs or artists you like</label>
+<div class="bar">
+  <input id="q" placeholder="Blinding Lights, Kendrick Lamar, Mr. Brightside" autocomplete="off">
+  <select id="platform" aria-label="Streaming platform">
+    <option value="spotify">Spotify</option>
+    <option value="youtube">YouTube Music</option>
+    <option value="apple">Apple Music</option>
+  </select>
+  <button class="go" id="go">Find songs</button>
+</div>
+<div class="chips" id="chips"><span>Or start from a genre:</span></div>
+<div id="out" aria-live="polite"></div>
+</main>
+
+<!-- Sample data (JSON). AI-generated: verify songs are real before relying on them. -->
+<script id="songs" type="application/json">
+{"genres":[
+{"name":"Pop","songs":[
+{"title":"Blinding Lights","artist":"The Weeknd"},{"title":"Levitating","artist":"Dua Lipa"},
+{"title":"Shape of You","artist":"Ed Sheeran"},{"title":"Bad Guy","artist":"Billie Eilish"},
+{"title":"As It Was","artist":"Harry Styles"},{"title":"Flowers","artist":"Miley Cyrus"},
+{"title":"Anti-Hero","artist":"Taylor Swift"},{"title":"Good 4 U","artist":"Olivia Rodrigo"}]},
+{"name":"Hip-Hop","songs":[
+{"title":"HUMBLE.","artist":"Kendrick Lamar"},{"title":"God's Plan","artist":"Drake"},
+{"title":"Sicko Mode","artist":"Travis Scott"},{"title":"Lose Yourself","artist":"Eminem"},
+{"title":"Juicy","artist":"The Notorious B.I.G."},{"title":"Stronger","artist":"Kanye West"},
+{"title":"Empire State of Mind","artist":"Jay-Z"},{"title":"Money Trees","artist":"Kendrick Lamar"}]},
+{"name":"Rock","songs":[
+{"title":"Bohemian Rhapsody","artist":"Queen"},{"title":"Smells Like Teen Spirit","artist":"Nirvana"},
+{"title":"Back in Black","artist":"AC/DC"},{"title":"Mr. Brightside","artist":"The Killers"},
+{"title":"Seven Nation Army","artist":"The White Stripes"},{"title":"Do I Wanna Know?","artist":"Arctic Monkeys"},
+{"title":"Sweet Child o' Mine","artist":"Guns N' Roses"},{"title":"Hotel California","artist":"Eagles"}]},
+{"name":"R&B","songs":[
+{"title":"Crazy in Love","artist":"Beyonce"},{"title":"Redbone","artist":"Childish Gambino"},
+{"title":"No Scrubs","artist":"TLC"},{"title":"Thinkin Bout You","artist":"Frank Ocean"},
+{"title":"Best Part","artist":"Daniel Caesar"},{"title":"Snooze","artist":"SZA"},
+{"title":"Kill Bill","artist":"SZA"},{"title":"Adorn","artist":"Miguel"}]},
+{"name":"Country","songs":[
+{"title":"Friends in Low Places","artist":"Garth Brooks"},{"title":"Jolene","artist":"Dolly Parton"},
+{"title":"Tennessee Whiskey","artist":"Chris Stapleton"},{"title":"Body Like a Back Road","artist":"Sam Hunt"},
+{"title":"Take Me Home, Country Roads","artist":"John Denver"},{"title":"Cruise","artist":"Florida Georgia Line"},
+{"title":"The House That Built Me","artist":"Miranda Lambert"},{"title":"Wagon Wheel","artist":"Darius Rucker"}]}
+]}
+</script>
+
+<script>
+const DATA = JSON.parse(document.getElementById('songs').textContent);
+const PLATFORMS = {
+  spotify: 'https://open.spotify.com/search/',
+  youtube: 'https://music.youtube.com/search?q=',
+  apple: 'https://music.apple.com/us/search?term='
+};
+const norm = s => s.toLowerCase().replace(/[^a-z0-9 ]/g, ' ').replace(/\s+/g, ' ').trim();
+const esc = s => s.replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const link = (song, platform) => (PLATFORMS[platform] || PLATFORMS.spotify) + encodeURIComponent(song.title + ' ' + song.artist);
+
+// Find the first song whose title or artist matches the typed text (exact match first, then partial).
+function findMatch(term) {
+  const n = norm(term);
+  if (!n) return null;
+  const all = DATA.genres.flatMap(g => g.songs.map(s => ({ genre: g.name, song: s })));
+  return all.find(m => norm(m.song.title) === n || norm(m.song.artist) === n)
+      || (n.length >= 3 ? all.find(m => norm(m.song.title).includes(n) || norm(m.song.artist).includes(n)) : null)
+      || null;
+}
+
+// Core logic: typed text -> detected genres + recommended songs. No page code in here, so it is easy to test.
+function recommend(input, platform = 'spotify', limit = 8) {
+  const terms = input.split(',').map(t => t.trim()).filter(Boolean);
+  const votes = {}, matched = [], unmatched = [], skipArtists = new Set(), skipTitles = new Set();
+  terms.forEach(t => {
+    const m = findMatch(t);
+    if (!m) return unmatched.push(t);
+    matched.push({ term: t, genre: m.genre });
+    votes[m.genre] = (votes[m.genre] || 0) + 1;
+    skipArtists.add(m.song.artist);
+    skipTitles.add(m.song.title);
+  });
+  const genres = Object.keys(votes).sort((a, b) => votes[b] - votes[a]);
+  const pools = genres.map(g => DATA.genres.find(x => x.name === g).songs
+    .filter(s => !skipArtists.has(s.artist) && !skipTitles.has(s.title)));
+  const songs = [];
+  for (let i = 0; songs.length < limit && pools.some(p => i < p.length); i++) {
+    pools.forEach(p => { if (i < p.length && songs.length < limit) songs.push({ ...p[i], url: link(p[i], platform) }); });
+  }
+  return { matched, unmatched, genres, songs };
+}
+
+function genreSongs(name, platform, limit = 8) {
+  const g = DATA.genres.find(x => x.name === name);
+  return { matched: [], unmatched: [], genres: [name], songs: g.songs.slice(0, limit).map(s => ({ ...s, url: link(s, platform) })) };
+}
+
+function render(r) {
+  const out = document.getElementById('out');
+  let html = '';
+  if (r.genres.length) html += `<p class="note">Detected genre${r.genres.length > 1 ? 's' : ''}: <strong>${r.genres.map(esc).join(', ')}</strong></p>`;
+  if (r.unmatched.length) html += `<p class="note err">Not in the sample data yet: ${r.unmatched.map(esc).join(', ')}</p>`;
+  if (!r.songs.length) html += `<p class="note">No matches. Try a song or artist from the genre buttons below the search box.</p>`;
+  else html += '<ul>' + r.songs.map(s => `<li><div>${esc(s.title)}<small>${esc(s.artist)}</small></div><a href="${s.url}" target="_blank" rel="noopener">Listen</a></li>`).join('') + '</ul>';
+  out.innerHTML = html;
+}
+
+const platformEl = document.getElementById('platform');
+const qEl = document.getElementById('q');
+const run = () => render(recommend(qEl.value, platformEl.value));
+document.getElementById('go').addEventListener('click', run);
+qEl.addEventListener('keydown', e => { if (e.key === 'Enter') run(); });
+DATA.genres.forEach(g => {
+  const b = document.createElement('button');
+  b.textContent = g.name;
+  b.addEventListener('click', () => render(genreSongs(g.name, platformEl.value)));
+  document.getElementById('chips').appendChild(b);
+});
+</script>
+</body>
+</html>
