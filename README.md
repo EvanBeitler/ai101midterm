@@ -26,24 +26,5 @@ No install needed. Download `index.html` and open it in any browser. To test, ty
 ## AI assistance
 Claude (Anthropic) generated the code, the sample song data, this README, and the agent instructions in `CLAUDE.md`. I directed the project idea, scope, and features.
 
-**What I verified myself:** see the proof checks below.
-
-## Issue #1: Recommend songs from the detected genre
-**Acceptance criteria**
-- Given 2 Pop songs, the app shows 6 other Pop songs and none of the 2 I typed.
-- Given an artist and a song from different genres, the app shows both genres.
-- Given text that isn't in the data, the app shows a "not in the sample data" message instead of crashing.
-- Every result has a Listen link that opens a search for that song on the chosen platform.
-
-## Proof checks (to be completed by me)
-Fill in what actually happened when you ran each test.
-
-| Test | Expected | What actually happened |
-|---|---|---|
-| `Blinding Lights, Levitating` | Pop, 6 results | |
-| `Kendrick Lamar, Mr. Brightside` | Hip-Hop and Rock, no Kendrick results | |
-| `asdfgh` | "Not in the sample data" message, no crash | |
-| Click a Listen link (all 3 platforms) | Search opens for the right song | |
-| Spot-check 10 songs in the sample data | Each song really exists by that artist | |
 
 **Challenge I want help with:** can AI power the recommendations without paying for an always-running agent?
