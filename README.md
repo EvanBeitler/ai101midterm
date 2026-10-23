@@ -25,6 +25,3 @@ No install needed. Download `index.html` and open it in any browser. To test, ty
 
 ## AI assistance
 Claude (Anthropic) generated the code, the sample song data, this README, and the agent instructions in `CLAUDE.md`. I directed the project idea, scope, and features.
-
-
-**Challenge I want help with:** can AI power the recommendations without paying for an always-running agent?
