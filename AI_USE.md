@@ -3,7 +3,7 @@
 
 **What the AI contributed:** the app code (index.html), the sample song data, the first drafts of the README, test log and evidence templates, and logic tests it ran outside the browser.
 
-**What I changed:** ______ (list your own edits, for example the live link, README wording, anything you fixed)
+**What I changed:** Fine tuning and rewording within the README and other files, identified and fixed a logical error within the app itself, the layout of the app as well as some new features. 
 
 **What I verified:** ______ (for example the five tests on the live site, and which songs you fact-checked)
 
