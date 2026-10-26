@@ -10,9 +10,9 @@ Run every test on the **live GitHub Pages site** (private window). Fill in Actua
 | 5 | Narrow screen | Open on your phone (or shrink the window below 600px) | Single column, search box first, no sideways scrolling | Works as intended | Pass |
 
 ## Fact check
-Spot-check about 10 songs from the sample data against an official source (Spotify or the artist's page). Note any wrong ones: ______
+Spot-check about 10 songs from the sample data against an official source (Spotify or the artist's page). Note any wrong ones: No Wrong Ones. 
 
 ## One fix and retest
-- Problem found: ______
-- Fix (prompt or change): ______
-- Retest result: ______
+- Problem found: html file reverted itself after being updated loosing new features added after a few minutes with the new features on the live page. 
+- Fix (prompt or change): reuploaded the new index.html and retested the live site.
+- Retest result: The new site is back and functional. 
