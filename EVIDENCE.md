@@ -7,9 +7,6 @@
 See AI_USE.md for the exact initial and follow-up prompts.
 
 ## Before / after
-Take two screenshots of the same browser window width and save them in the `evidence/` folder:
-- Before: open `evidence/index-before.html` and save as `evidence/before.png`
-- After: open the live site and save as `evidence/after.png`
 
 Before:
 <img width="1279" height="681" alt="Screenshot 2026-10-26 174129" src="https://github.com/user-attachments/assets/c1c4b8f9-968f-4e01-9ca4-af4556ab8e25" />
